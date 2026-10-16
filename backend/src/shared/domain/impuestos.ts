@@ -11,3 +11,4 @@ export function calcularIva(base: number): number {
 export function agregarIva(base: number): number {
   return redondearMoneda(base + calcularIva(base));
 }
+export const prueba: number = 'texto';
