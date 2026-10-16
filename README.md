@@ -11,7 +11,7 @@ Ordenix/
 ├── backend/     API NestJS bajo Clean Architecture
 ├── frontend/    Aplicación web Next.js + React
 ├── database/    Esquema SQL del modelo Entidad-Relación
-└── .github/     Integración continua y despliegue a AWS
+└── .github/     Integración continua (GitHub Actions)
 ```
 
 ## Stack
@@ -22,7 +22,7 @@ Ordenix/
 | Servicios / API | NestJS 11 (Node.js + TypeScript) |
 | Datos | PostgreSQL en Amazon RDS |
 | Cómputo | Amazon EC2 con pm2 |
-| Entrega continua | GitHub Actions |
+| Integración continua | GitHub Actions (lint, tipos y build) |
 
 ## Arquitectura del backend
 
@@ -208,7 +208,7 @@ modo que nadie puede elevarse a si mismo desde la interfaz.
 Quien intenta entrar a un panel que no le corresponde es devuelto al suyo, y el
 endpoint equivalente responde 403.
 
-## Despliegue en AWS
+## Infraestructura en AWS
 
 | Componente | Servicio |
 |---|---|
@@ -216,12 +216,17 @@ endpoint equivalente responde 403.
 | API | Amazon EC2, proceso administrado con pm2 (`backend-posgrado`) |
 | Aplicación web | Amazon EC2, proceso administrado con pm2 (`frontend-ordenix`) |
 
-`.github/workflows/deploy-backend.yml` y `deploy-frontend.yml` publican cada
-componente al fusionar en `main`. Ambos hacen `npm ci`, compilan, reinician el
-proceso en pm2 y verifican salud antes de dar el despliegue por bueno; si el
-servicio no responde, el workflow falla y deja el log de pm2.
+## Integración continua
 
-Secretos requeridos en el repositorio: `EC2_HOST`, `EC2_USER` y `EC2_SSH_KEY`.
+`.github/workflows/ci.yml` corre en cada Pull Request hacia `main` y en cada
+push a `main`, con dos jobs independientes:
+
+| Job | Pasos |
+|---|---|
+| Backend | `npm ci` → lint (ESLint) → typecheck (`tsc --noEmit`) → build |
+| Frontend | `npm ci` → lint → build (incluye chequeo de tipos de Next.js) |
+
+`main` exige que `Backend` y `Frontend` pasen antes de permitir el merge.
 
 ## Flujo de trabajo en Git
 
